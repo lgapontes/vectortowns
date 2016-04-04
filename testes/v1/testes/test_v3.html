@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drawing a Rectangle on Canvas</title>
+<style type="text/css">
+	canvas{
+		border: 1px solid #D8D5AE;
+        background-color: #FFF;
+	}
+</style>
+</head>
+<body>
+    <img id="wallpaper" src="4c8xmGs.jpg" style="display: none;">
+    <img id="stairs" src="teste2_.png" style="display: none;">
+    
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    <script>        
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        
+        /* BACKGROUND */
+        var wallpaper=document.getElementById("wallpaper");
+        ctx.drawImage(wallpaper,-(1024-500)/2,-(768-300)/2);
+        
+        
+        /* TOWER 1 */
+        var size = 40;
+        var position_x = canvas.width/2;
+        var position_y = canvas.height/2 - size/2 - 55;
+        
+        // Wall
+        ctx.beginPath();
+        ctx.arc(position_x,position_y,size,0,2*Math.PI);
+        ctx.fillStyle = "#322B21";
+        ctx.fill();
+        
+        // Floor
+        ctx.beginPath();
+        ctx.arc(position_x,position_y,size-1,0,2*Math.PI);
+        ctx.fillStyle = "#F5E9D9";
+        ctx.fill();
+        
+        // Selected 
+        /*
+        ctx.beginPath();
+        ctx.arc(position_x,position_y,size-3,0,2*Math.PI);
+        ctx.fillStyle = "#D8D5AE";
+        ctx.fill();
+        */
+        
+        // Tower Number Arc
+        ctx.beginPath();
+        ctx.arc(position_x,position_y,14,0,2*Math.PI);
+        ctx.fillStyle = "#A8A57E";
+        ctx.fill();
+        
+        // Tower Number
+        ctx.beginPath();
+        ctx.font = "bold 20px Courier New";
+        ctx.fillStyle = "#FFF";
+        ctx.textAlign = "center";
+        ctx.fillText("2",position_x,position_y+6);
+        
+        /* ROOM 1 */
+        
+        var width = 150;
+        var height = 80;
+        var position_x = canvas.width/2 - width/2;
+        var position_y = canvas.height/2 - height/2;
+        
+        // Wall
+        ctx.beginPath();
+        ctx.fillStyle = "#322B21";
+        ctx.rect(position_x, position_y, width, 80);
+        ctx.fill();
+        
+        // Floor
+        ctx.beginPath();
+        ctx.fillStyle = "#F5E9D9";
+        ctx.rect(position_x + 1, position_y + 1, width - 2, height - 2);
+        ctx.fill();
+        
+        // Selected Floor
+        /*
+        ctx.beginPath();
+        ctx.fillStyle = "#D8D5AE";
+        ctx.rect(position_x + 3, position_y + 3, width - 5, height - 6);
+        ctx.fill();
+        */
+		
+        /* STAIRS */
+        var stairs=document.getElementById("stairs");
+        ctx.drawImage(stairs,position_x+4,position_y+4);
+        
+        // Door Bottom
+        ctx.beginPath();
+        ctx.fillStyle = "#322B21"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width/2 - 15, position_y + height - 3, 30, 5);
+        ctx.fill();
+        
+        // Door Top
+        ctx.beginPath();
+        ctx.fillStyle = "#322B21"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width/2 - 15, position_y - 2, 30, 5);
+        ctx.fill();
+        
+        // Door Left
+        ctx.beginPath();
+        ctx.fillStyle = "#322B21"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x - 2, position_y + height/2 - 15, 5, 30);
+        ctx.fill();
+        
+        // Door Right
+        ctx.beginPath();
+        ctx.fillStyle = "#322B21"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width - 3, position_y + height/2 - 15, 5, 30);
+        ctx.fill();
+        
+        // Room Number Arc
+        ctx.beginPath();
+        ctx.arc(canvas.width/2,canvas.height/2,14,0,2*Math.PI);
+        ctx.fillStyle = "#A8A57E";
+        ctx.fill();
+        
+        // Room Number
+        ctx.beginPath();
+        ctx.font = "bold 20px Courier New";
+        ctx.fillStyle = "#FFF";
+        ctx.textAlign = "center";
+        ctx.fillText("1",canvas.width/2,canvas.height/2+6); 
+        
+    </script>    
+</body>
+</html>                                		

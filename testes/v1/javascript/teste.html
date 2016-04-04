@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script style="text/javascript" src="lib.js"></script>
+</head>
+<body>
+
+<script>
+
+/*
+function person(first, last, age, eye) {
+    this.firstName = first;
+    this.lastName = last;
+    this.age = age;
+    this.eyeColor = eye;
+}
+person.prototype.name = function() {
+    return this.firstName + " " + this.lastName
+};
+
+superperson.prototype = new person();
+superperson.prototype.constructor=superperson;
+function superperson(first, last, age, eye) {
+}
+superperson.prototype.name2=function(){ 
+	return 'Blz';
+} 
+
+var p1 = new person("John", "Doe", 50, "blue");
+var p2 = new superperson("Maria", "Doe", 50, "blue");
+
+console.log( "My father is " + p1.name() ); 
+console.log( "My father is " + p2.name2() ); 
+*/
+
+// Let's try this
+function Animal(name) {
+  this.name = name;
+}
+
+Animal.prototype = {
+  sayMyName: function() {
+    console.log(this.getWordsToSay() + " " + this.name);
+  },
+  getWordsToSay: function() {
+    // Abstract
+  }
+}
+
+function Dog(name,age) {
+  // Call the parent's constructor
+  Animal.call(this, name);
+  this.age = age;
+}
+
+Dog.prototype = {
+    getWordsToSay: function(){
+      return "Ruff Ruff";
+    },
+	getAge: function(){
+		return this.age;
+	}
+}    
+
+// Setup the prototype chain the right way
+extend(Animal, Dog);
+
+// Here is where the Dog (and Animal) constructors are called
+var dog = new Dog("Lassie",10);
+dog.sayMyName(); // Outputs Ruff Ruff Lassie
+console.log(dog instanceof Animal); // true
+console.log(dog.constructor); // Dog
+console.log(dog.getAge());
+
+
+</script>
+
+</body>
+</html>

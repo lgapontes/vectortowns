@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drawing a Rectangle on Canvas</title>
+<style type="text/css">
+	canvas{
+		border: 1px solid #D8D5AE;
+        background-color: #FFF;
+	}
+</style>
+</head>
+<body>
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    <script>        
+        var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+        
+        /* ROOM 1 */
+        
+        var width = 150;
+        var height = 80;
+        var position_x = canvas.width/2 - width/2;
+        var position_y = canvas.height/2 - height/2;
+        
+        // Wall
+        ctx.beginPath();
+        ctx.fillStyle = "black";
+        ctx.rect(position_x, position_y, width, 80);
+        ctx.fill();
+        
+        // Floor
+        ctx.beginPath();
+        ctx.fillStyle = "#FFF";
+        ctx.rect(position_x + 1, position_y + 1, width - 2, height - 2);
+        ctx.fill();
+        
+        // Selected Floor
+        /*
+        ctx.beginPath();
+        ctx.fillStyle = "#D8D5AE";
+        ctx.rect(position_x + 3, position_y + 3, width - 5, height - 6);
+        ctx.fill();
+        */
+        
+        // Door Bottom
+        ctx.beginPath();
+        ctx.fillStyle = "#000000"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width/2 - 15, position_y + height - 3, 30, 5);
+        ctx.fill();
+        
+        // Door Top
+        ctx.beginPath();
+        ctx.fillStyle = "#000000"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width/2 - 15, position_y - 2, 30, 5);
+        ctx.fill();
+        
+        // Door Left
+        ctx.beginPath();
+        ctx.fillStyle = "#000000"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x - 2, position_y + height/2 - 15, 5, 30);
+        ctx.fill();
+        
+        // Door Right
+        ctx.beginPath();
+        ctx.fillStyle = "#000000"; // Opened
+        //ctx.fillStyle = "#A05050"; // Closed
+        ctx.rect(position_x + width - 3, position_y + height/2 - 15, 5, 30);
+        ctx.fill();
+        
+        // Room Number Arc
+        ctx.beginPath();
+        ctx.arc(canvas.width/2,canvas.height/2,14,0,2*Math.PI);
+        ctx.fillStyle = "#A8A57E";
+        ctx.fill();
+        
+        // Room Number
+        ctx.beginPath();
+        ctx.font = "bold 20px Courier New";
+        ctx.fillStyle = "#FFF";
+        ctx.textAlign = "center";
+        ctx.fillText("1",canvas.width/2,canvas.height/2+6); 
+        
+        
+    </script>    
+</body>
+</html>                                		

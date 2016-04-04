@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Drawing a Rectangle on Canvas</title>
+<style type="text/css">
+	canvas{
+		border: 1px solid #D8D5AE;
+        background-color: #FFF;
+	}
+</style>
+</head>
+<body>
+    <img id="wallpaper" src="background.jpg" style="display: none;">
+    <img id="stairs_up" src="stairs_up.png" style="display: none;">
+	<img id="stairs_down" src="stairs_down.png" style="display: none;">
+	<img id="stairs_corner_up" src="stairs_corner_up.png" style="display: none;">
+	<img id="stairs_corner_down" src="stairs_corner_down.png" style="display: none;">
+    <img id="door" src="door.png" style="display: none;">
+	<img id="locked" src="locked.png" style="display: none;">
+	<img id="array_north" src="array_north.png" style="display: none;">
+	<img id="array_east" src="array_east.png" style="display: none;">
+	<img id="array_south" src="array_south.png" style="display: none;">
+	<img id="array_west" src="array_west.png" style="display: none;">
+	
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    <script>
+		
+		/* Get canvas and context */
+		var canvas = document.getElementById("myCanvas");
+        var ctx = canvas.getContext("2d");
+		
+		/* Variables */
+		var wallColor = '#322B21';
+		var floorColor = '#F5E9D9'
+		var selectedColor = '#D8D5AE';
+		var arcNumberColor = '#A8A57E';
+		var numberColor = '#FFFFFF';
+		
+		/* Functions */
+		var axis = {};
+		axis.north = 0;
+		axis.east = 1;
+		axis.south = 2;
+		axis.west = 3;
+		
+		function door(_axis,_room,_locked,_exit) {
+			this.axis = _axis;
+			this.room = _room;
+			this.width = 32;
+			this.height = 6;
+			this.locked = {};
+			this.locked.is = _locked;
+			this.locked.width = 16;
+			this.locked.height = 12;
+			this.exit = _exit;
+		};
+		
+		function printDoor(_ctx,_door) {
+			_ctx.beginPath();
+			_ctx.fillStyle = wallColor;
+			
+			if (_door.axis === axis.south) {
+				_ctx.rect(
+					_door.room.position.x + _door.room.width/2 - _door.width/2,
+					_door.room.position.y + _door.room.height - _door.height/2,
+					_door.width, 
+					_door.height
+				);
+				_ctx.fill();
+				if (_door.locked.is) {
+					_ctx.drawImage(
+						locked,
+						_door.room.position.x + _door.room.width/2 - _door.locked.width/2,
+						_door.room.position.y + _door.room.height - _door.locked.height/2
+					);	
+				}
+				if (_door.exit) {
+					_ctx.drawImage(
+						array_south,
+						_door.room.position.x + _door.room.width/2 - 16,
+						_door.room.position.y + _door.room.height + 10
+					);
+				}
+			} else if (_door.axis === axis.north) {			
+				_ctx.rect(
+					_door.room.position.x + _door.room.width/2 - _door.width/2,
+					_door.room.position.y - _door.height/2,
+					_door.width, 
+					_door.height
+				);
+				_ctx.fill();
+				if (_door.locked.is) {
+					_ctx.drawImage(
+						locked,
+						_door.room.position.x + _door.room.width/2 - _door.locked.width/2,
+						_door.room.position.y - _door.locked.height/2
+					);	
+				}
+				if (_door.exit) {
+					_ctx.drawImage(
+						array_north,
+						_door.room.position.x + _door.room.width/2 - 16,
+						_door.room.position.y - 42
+					);
+				}
+			} else if (_door.axis === axis.east) {
+				_ctx.rect(
+					_door.room.position.x + _door.room.width - _door.height/2,
+					_door.room.position.y + _door.room.height/2 - _door.width/2,
+					_door.height, 
+					_door.width
+				);
+				_ctx.fill();
+				if (_door.locked.is) {
+					_ctx.drawImage(
+						locked,
+						_door.room.position.x + _door.room.width - _door.locked.height/2,
+						_door.room.position.y + _door.room.height/2 - _door.locked.width/2 + 2
+					);	
+				}
+				if (_door.exit) {
+					_ctx.drawImage(
+						array_east,
+						_door.room.position.x + _door.room.width + 14,
+						_door.room.position.y + _door.room.height/2 - 16
+					);
+				}
+			} else if (_door.axis === axis.west) {
+				_ctx.rect(
+					_door.room.position.x - _door.height/2,
+					_door.room.position.y + _door.room.height/2 - _door.width/2,
+					_door.height, 
+					_door.width
+				);
+				_ctx.fill();
+				if (_door.locked.is) {
+					_ctx.drawImage(
+						locked,
+						_door.room.position.x - _door.locked.height/2,
+						_door.room.position.y + _door.room.height/2 - _door.locked.width/2 + 2
+					);
+				}
+				if (_door.exit) {
+					_ctx.drawImage(
+						array_west,
+						_door.room.position.x - 42,
+						_door.room.position.y + _door.room.height/2 - 16
+					);
+				}
+			}
+		};
+		
+		var smallRoom = {};
+		smallRoom.width = 150;
+		smallRoom.height = 80;
+		
+		var room = new function() {
+			this.number = 0;
+			this.width = smallRoom.width;
+			this.height = smallRoom.height;
+			this.selected = false;
+			this.position = {};	
+			this.doors = [];
+			this.stairs = {};
+			this.stairs.up = false;
+			this.stairs.down = false;
+			
+			this.towers = [];
+		};
+		
+		function printRoom(_ctx,_room) {
+			
+			// Towers
+			_room.towers.forEach(function(entry){
+				if (entry.axis === axis.north) {
+					entry.tower.position.x = _room.position.x + _room.width/2;
+					entry.tower.position.y = _room.position.y - entry.tower.size + 5;					
+				}
+				if (entry.axis === axis.south) {
+					entry.tower.position.x = _room.position.x + _room.width/2;
+					entry.tower.position.y = _room.position.y + _room.height + entry.tower.size + 5;					
+				}
+				printTower(_ctx,entry.tower);
+			});
+		
+			// Wall
+			_ctx.beginPath();
+			_ctx.fillStyle = wallColor;
+			_ctx.rect(_room.position.x, _room.position.y, _room.width, _room.height);
+			_ctx.fill();
+
+			// Floor
+			_ctx.beginPath();
+			_ctx.fillStyle = floorColor;
+			_ctx.rect(_room.position.x + 1, _room.position.y + 1, _room.width - 2, _room.height - 2);
+			_ctx.fill();
+			
+			// Selected
+			if (_room.selected) {
+				_ctx.beginPath();
+				_ctx.fillStyle = selectedColor;
+				_ctx.rect(_room.position.x + 3, _room.position.y + 3, _room.width - 5, _room.height - 6);
+				_ctx.fill();
+			}
+			
+			// Doors
+			_room.doors.forEach(function(entry){
+				printDoor(_ctx,entry);
+			});
+			
+			/* Stairs */
+			if (_room.stairs.up) {
+				_ctx.drawImage(stairs_up,_room.position.x+14,_room.position.y+14);
+			}	
+			if (_room.stairs.down) {
+				_ctx.drawImage(stairs_down,_room.position.x+_room.width-46,_room.position.y+	14);
+			}
+			
+			// Room Number Arc
+			_ctx.beginPath();
+			_ctx.arc(
+				_room.position.x + _room.width/2,
+				_room.position.y + _room.height/2,
+				14,
+				0,
+				2*Math.PI
+			);
+			_ctx.fillStyle = arcNumberColor;
+			_ctx.fill();
+			
+			// Room Number
+			ctx.beginPath();
+			ctx.font = "bold 20px Courier New";
+			ctx.fillStyle = numberColor;
+			ctx.textAlign = "center";
+			ctx.fillText(
+				_room.number,
+				_room.position.x + _room.width/2,
+				_room.position.y + _room.height/2+6
+			);
+		};
+		
+		var tower = new function() {
+			this.number = 0;
+			this.size = 40;
+			this.selected = false;
+			this.position = {};
+			this.stairs = {};
+			this.stairs.up = false;
+			this.stairs.down = false;
+		};
+		
+		function printTower(_ctx, _tower) {
+			// Wall
+			_ctx.beginPath();
+			_ctx.arc(_tower.position.x,_tower.position.y,_tower.size,0,2*Math.PI);
+			_ctx.fillStyle = wallColor;
+			_ctx.fill();
+			
+			// Floor
+			_ctx.beginPath();
+			_ctx.arc(_tower.position.x,_tower.position.y,_tower.size-1,0,2*Math.PI);
+			_ctx.fillStyle = floorColor;
+			_ctx.fill();
+			
+			// Stairs
+			if (_tower.stairs.up) {
+				_ctx.drawImage(stairs_corner_up,_tower.position.x-39,_tower.position.y-39);
+			}
+			if (_tower.stairs.down) {
+				_ctx.drawImage(stairs_corner_down,_tower.position.x+1,_tower.position.y-39);
+			}
+			
+			// Selected 
+			if (_tower.selected) {
+				_ctx.beginPath();
+				_ctx.arc(_tower.position.x,_tower.position.y,_tower.size-3,0,2*Math.PI);
+				_ctx.fillStyle = selectedColor;
+				_ctx.fill();
+			}
+			
+			// Tower Number Arc
+			_ctx.beginPath();
+			_ctx.arc(_tower.position.x,_tower.position.y,14,0,2*Math.PI);
+			_ctx.fillStyle = arcNumberColor;
+			_ctx.fill();
+			
+			// Tower Number
+			_ctx.beginPath();
+			_ctx.font = "bold 20px Courier New";
+			_ctx.fillStyle = numberColor;
+			_ctx.textAlign = "center";
+			_ctx.fillText(_tower.number,_tower.position.x,_tower.position.y+6);
+		};
+		
+        /* Background */
+        ctx.drawImage(wallpaper,-(1024-500)/2,-(768-300)/2);
+        
+		/* Tower */
+		var towers = [];
+		towers[0] = tower;
+		towers[0].number = 2;
+		towers[0].stairs.up = true;
+		towers[0].stairs.down = true;
+		
+		/* Room */
+		var rooms = [];
+		rooms[0] = room;
+		rooms[0].number = 1;
+		rooms[0].position.x = canvas.width/2 - rooms[0].width/2;
+		rooms[0].position.y = canvas.height/2 - rooms[0].height/2;
+		rooms[0].stairs.up = true;
+		rooms[0].stairs.down = true;
+		
+		rooms[0].towers[0] = {
+			tower: towers[0],
+			axis: axis.north
+		};
+		
+		var doors = [];
+		doors[0] = new door(axis.north,rooms[0],true,false);
+		doors[1] = new door(axis.east,rooms[0],true,false);
+		doors[2] = new door(axis.south,rooms[0],true,false);
+		doors[3] = new door(axis.west,rooms[0],true,false);
+		rooms[0].doors = doors;
+		
+        /* Print Room */
+		printRoom(ctx,rooms[0]); 
+        
+    </script>    
+</body>
+</html>                                		

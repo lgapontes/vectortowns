@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Drawing a Rectangle on Canvas</title>
+	<style type="text/css">
+		canvas{
+			border: 2px solid #B8B58E;
+			background-color: #FFF;
+		}
+	</style>
+	<script style="text/javascript" src="model.js"></script>
+</head>
+<body>
+    <img id="wallpaper" src="background.jpeg" style="display: none;">
+    <img id="stairs_up" src="stairs_up.png" style="display: none;">
+	<img id="stairs_down" src="stairs_down.png" style="display: none;">
+	<img id="locked" src="locked.png" style="display: none;">
+	<img id="array_north" src="array_north.png" style="display: none;">
+	<img id="array_east" src="array_east.png" style="display: none;">
+	<img id="array_south" src="array_south.png" style="display: none;">
+	<img id="array_west" src="array_west.png" style="display: none;">
+	<img id="compass" src="compass.png" style="display: none;">
+	
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    <script>
+		
+		var WIDTH = 500;
+		var HEIGHT = 300;
+		var dragok = false;
+		var canvas;
+		var ctx;
+		
+		/* Initial position and background */
+		var background_width = 1800;
+		var background_height = 1350;
+		var initial_position_x = -(background_width-WIDTH)/2;
+		var initial_position_y = -(background_height-HEIGHT)/2;
+		
+		/* Mouse drag */
+		var x;
+		var y;
+		var clickY;
+		var clickX;
+		var diffY = 0;
+		var diffX = 0;
+		
+		function data() {
+			/* Tower */
+			towers[0] = new Tower(4,true,false);
+			towers[1] = new Tower(5,false,true);
+			
+			/* Room */
+			rooms[0] = new Room(1,true,true,longHorizontalHall,true);			
+			rooms[1] = new Room(2,true,true,smallRoom);			
+			rooms[2] = new Room(3,true,true,mediumRoom);
+
+			setNeighbors(rooms[0],rooms[1],axis.east);
+			//rooms[0].neighbors[0] = new Neighbor(rooms[1],axis.east);
+			
+			setNeighbors(rooms[0],rooms[2],axis.south);
+			//rooms[0].neighbors[1] = new Neighbor(rooms[2],axis.south);
+			
+			setNeighbors(rooms[0],towers[0],axis.north);
+			//rooms[0].neighbors[2] = new Neighbor(towers[0],axis.north);
+			
+			setNeighbors(rooms[0],towers[1],axis.west);
+			//rooms[0].neighbors[3] = new Neighbor(towers[1],axis.west);		
+			
+			rooms[0].selected = false;
+			
+			var doors_1 = [];
+			doors_1[0] = new Door(axis.north,rooms[0],false,false);
+			doors_1[2] = new Door(axis.south,rooms[0],false,false);
+			doors_1[3] = new Door(axis.west,rooms[0],false,false);
+			doors_1[4] = new Door(axis.east,rooms[0],false,false);
+			rooms[0].doors = doors_1;
+			
+			var doors_2 = [];			
+			doors_2[0] = new Door(axis.south,rooms[1],true,true);
+			rooms[1].doors = doors_2;
+			
+			/* Set position */
+			rooms[0].position.x = initial_position_x + background_width/2 - rooms[0].width/2;
+			rooms[0].position.y = initial_position_y + background_height/2 - rooms[0].height/2;
+		};
+		
+		function draw() {
+			/* Clear */
+			ctx.beginPath();
+			ctx.fillStyle = clearColor;
+			ctx.rect(0, 0, WIDTH, HEIGHT);
+			ctx.closePath();
+			ctx.fill();
+			
+			/* Background */
+			ctx.drawImage(wallpaper,initial_position_x,initial_position_y);
+			
+			/* Draw rooms */
+			clearDisplayed();
+			printRoom(rooms[0]);
+
+			/* Compass */
+			ctx.drawImage(compass,7,17);
+			ctx.beginPath();
+			ctx.font = "bold 20px Courier New";
+			ctx.fillStyle = compassColor;
+			ctx.textAlign = "center";
+			ctx.closePath();
+			ctx.fillText('N',39,18);
+			
+			/* Floor code */
+			ctx.beginPath();
+			ctx.font = "bold 36px Courier New";
+			ctx.fillStyle = compassColor;
+			ctx.textAlign = "center";
+			ctx.closePath();
+			ctx.fillText('1F',WIDTH-32,32);
+		};
+		
+		function myMove(e){
+			if (dragok){
+				x = e.pageX;
+				y = e.pageY;
+				diffX = (x - clickX);
+				diffY = (y - clickY);
+				clickX = e.pageX;
+				clickY = e.pageY;
+				moveMap();
+			}
+		};
+		
+		function myDown(e){
+			clickX = e.pageX;
+			clickY = e.pageY;
+			dragok = true;
+			canvas.onmousemove = myMove;
+		};
+
+		function myUp(){
+			dragok = false;
+			canvas.onmousemove = null;
+		};
+		
+		function moveMap() {
+			initial_position_x = initial_position_x + diffX;
+			initial_position_y = initial_position_y + diffY;
+		
+			/* Set position */
+			rooms[0].position.x = initial_position_x + background_width/2 - rooms[0].width/2;
+			rooms[0].position.y = initial_position_y + background_height/2 - rooms[0].height/2;
+		};
+		
+		function init() {
+			/* Get canvas and context */
+			canvas = document.getElementById("myCanvas");
+			ctx = canvas.getContext("2d");
+			
+			data();
+			x = canvas.width/2 - rooms[0].width/2;
+			y = canvas.height/2 - rooms[0].height/2;			
+			clickX = 0;
+ 			clickY = 0;
+			moveMap();
+			
+			return setInterval(draw, 10);
+		}		
+		
+        /* Draw */
+		init();
+		canvas.onmousedown = myDown;
+		canvas.onmouseup = myUp;
+        
+    </script>
+	
+	<br /><br />
+	<input type="radio" id="room">1</input>
+	<input type="radio" id="room">2</input>
+	<input type="radio" id="room">3</input>
+	<input type="radio" id="room">4</input>
+	<input type="radio" id="room">5</input>
+</body>
+</html>                                		

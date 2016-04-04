@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='UTF-8'>
+  </head>
+  <body>
+    <canvas id='canvas' width='512' height='512'></canvas>
+    <script>
+      var c=document.getElementById('canvas'),
+          ctx=c.getContext('2d'),
+          activeBox='none',
+          //populate the map with objects
+          box=[
+            {
+              x:256,
+              y:128,
+              width:32,
+              height:64
+            },
+            {
+              x:128,
+              y:64,
+              width:64,
+              height:64
+            },
+            {
+              x:32,
+              y:32,
+              width:32,
+              height:32
+            },
+          ];
+
+      function draw(){
+        //clear the screen, draw population
+        ctx.clearRect(0,0,c.width,c.height);
+        for(var i=0;i<box.length;i++){
+          ctx.fillRect(box[i].x,box[i].y,box[i].width,box[i].height);
+        }
+        //repeat at 60fps if possible, pause if window looses focus
+        requestAnimationFrame(draw);
+      }
+
+      function startTouch(e){
+        //this makes it easier to write control flow later and keeps XY relative to canvas
+        var xTouch=e.touches[0].pageX-c.offsetLeft,
+            yTouch=e.touches[0].pageY-c.offsetTop;
+
+        //its best to go through this loop in touchstart, because it only happens once per touch
+        for(var i=0;i<box.length;i++){
+          if(xTouch>box[i].x&&xTouch<box[i].x+box[i].width){
+            if(yTouch>box[i].y&&yTouch<box[i].y+box[i].height){
+              activeBox=i;
+            }
+          }
+        }
+      }
+
+      function moveTouch(e){
+        //grab a box by the center
+        if(activeBox!='none'){
+          box[activeBox].x=e.changedTouches[0].pageX-box[activeBox].width/2;
+          box[activeBox].y=e.changedTouches[0].pageY-box[activeBox].height/2;
+        }
+      }
+
+      function endTouch(){
+        //clear active so that dragging empty space wont move the last active box
+        activeBox='none';
+      }
+
+      canvas.addEventListener('touchstart',startTouch);
+      canvas.addEventListener('touchmove',moveTouch);
+      canvas.addEventListener('touchend',endTouch);
+      window.addEventListener('load',draw);
+    </script>
+  </body>
+</html>

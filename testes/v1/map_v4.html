@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Drawing a Rectangle on Canvas</title>
+	<style type="text/css">
+		canvas{
+			border: 2px solid #B8B58E;
+			background-color: #FFF;
+		}
+	</style>
+	<script style="text/javascript" src="model.js"></script>
+</head>
+<body>
+    <img id="wallpaper" src="background.jpeg" style="display: none;">
+    <img id="stairs_up" src="stairs_up.png" style="display: none;">
+	<img id="stairs_down" src="stairs_down.png" style="display: none;">
+	<img id="locked" src="locked.png" style="display: none;">
+	<img id="array_north" src="array_north.png" style="display: none;">
+	<img id="array_east" src="array_east.png" style="display: none;">
+	<img id="array_south" src="array_south.png" style="display: none;">
+	<img id="array_west" src="array_west.png" style="display: none;">
+	<img id="compass" src="compass.png" style="display: none;">
+	
+    <canvas id="myCanvas" width="500" height="300"></canvas>
+    <script>
+		
+		var DEBUG = true;
+		
+		var WIDTH = 500;
+		var HEIGHT = 300;
+		var dragok = false;
+		var canvas;
+		var ctx;
+		
+		/* Initial position and background */
+		var background_width = 1800;
+		var background_height = 1350;
+		var initial_position_x = -(background_width-WIDTH)/2;
+		var initial_position_y = -(background_height-HEIGHT)/2;
+		
+		/* Mouse drag */
+		var x;
+		var y;
+		
+		var clickY;
+		var clickX;
+		var touchX;
+		var touchY;
+		
+		var diffY = 0;
+		var diffX = 0;
+		
+		
+		
+		function drawAgain() {
+			places.forEach(function (place) {
+				place.neighbors.forEach(function (neighbor) {
+					neighbor.drawed.clear();
+				});
+			});
+		}
+		
+		function data() {			
+			
+			/* Places */
+			places[0] = new Room(1,false,false,mediumHorizontalHall);
+			places[1] = new Room(2,false,true,mediumRoom);
+			places[2] = new Room(3,false,false,smallRoom);
+			places[3] = new Room(4,false,false,smallRoom,false,false,Alignment.top);			
+			places[4] = new Room(5,false,false,longVerticalHall);
+			places[5] = new Room(6,false,false,smallSquare);
+			places[6] = new Tower(7,true,true);
+			places[7] = new Tower(8,true,true);
+			places[8] = new Tower(9,true,true);
+			places[9] = new Tower(10,true,true);
+			places[10] = new Room(11,false,false,smallRoom);
+			places[11] = new Tower(12,true,true);
+			places[12] = new Tower(13,true,true);
+			places[13] = new Tower(14,true,true);
+			places[14] = new Tower(15,true,true);
+			places[15] = new Room(16,false,false,smallRoom);
+			places[16] = new Tower(17,true,true);
+			places[17] = new Tower(18,true,true);
+			places[18] = new Room(19,false,false,smallRoom);
+			places[19] = new Tower(20,true,true);
+			places[20] = new Tower(21,true,true);
+			places[21] = new Room(22,false,false,smallRoom);
+			places[22] = new Tower(23,true,true);
+			places[23] = new Tower(24,true,true);
+			
+			/* Neighbors */
+			places[0].addNeighbor(places[1],axis.north,false,false);
+			places[0].addNeighbor(places[2],axis.east,false,false);
+			places[0].addEntrance(axis.south,true);
+			places[0].addNeighbor(places[3],axis.west,false,false);						
+			places[2].addNeighbor(places[4],axis.north,false,false);
+			places[3].addNeighbor(places[5],axis.north,false,false);
+			places[4].addEntrance(axis.north,false);
+			places[1].addNeighbor(places[6],axis.north,false,false);
+			places[2].addNeighbor(places[7],axis.east,false,false);
+			places[3].addNeighbor(places[8],axis.west,false,false);
+			places[2].addNeighbor(places[9],axis.south,false,false);
+			places[6].addNeighbor(places[10],axis.north,true,false);
+			places[5].addNeighbor(places[11],axis.north,true,false);
+			places[11].addEntrance(axis.north,true);
+			places[10].addNeighbor(places[12],axis.north,false,false);
+			places[12].addNeighbor(places[13],axis.north,true,false);
+			places[7].addEntrance(axis.east,true);			
+			places[4].addNeighbor(places[14],axis.east,false,false);
+			places[14].addNeighbor(places[15],axis.east,false,false);
+			places[15].addNeighbor(places[16],axis.east,false,false);
+			places[16].addNeighbor(places[17],axis.east,true,false);
+			places[7].addEntrance(axis.south,true);
+			places[9].addNeighbor(places[18],axis.south,false,false);
+			places[18].addNeighbor(places[19],axis.south,false,false);
+			places[19].addNeighbor(places[20],axis.south,false,false);
+			places[11].addEntrance(axis.west,true);
+			places[8].addNeighbor(places[21],axis.west,false,false);
+			places[21].addNeighbor(places[22],axis.west,false,false);
+			places[22].addNeighbor(places[23],axis.west,false,false);
+			
+			/* Set position */
+			places[0].position.x = initial_position_x + background_width/2 - places[0].size.width/2;
+			places[0].position.y = initial_position_y + background_height/2 - places[0].size.height/2;
+		};
+		
+		function draw() {
+			/* Clear */
+			ctx.beginPath();
+			ctx.fillStyle = clearColor;
+			ctx.rect(0, 0, WIDTH, HEIGHT);
+			ctx.closePath();
+			ctx.fill();
+			
+			/* Background */
+			ctx.drawImage(wallpaper,initial_position_x,initial_position_y);
+			
+			/* Draw */
+			places[0].draw();
+			drawAgain();
+			
+			/* Compass */
+			ctx.drawImage(compass,7,17);
+			ctx.beginPath();
+			ctx.font = "bold 20px Courier New";
+			ctx.fillStyle = compassColor;
+			ctx.textAlign = "center";
+			ctx.closePath();
+			ctx.fillText('N',39,18);
+			
+			/* Floor code */
+			ctx.beginPath();
+			ctx.font = "bold 36px Courier New";
+			ctx.fillStyle = compassColor;
+			ctx.textAlign = "center";
+			ctx.closePath();
+			ctx.fillText('1F',WIDTH-32,32);
+		};
+		
+		function myMove(e){
+			if (dragok){
+				x = e.pageX;
+				y = e.pageY;
+				diffX = (x - clickX);
+				diffY = (y - clickY);
+				clickX = e.pageX;
+				clickY = e.pageY;
+				moveMap();
+			}
+		};
+		
+		function myDown(e){
+			clickX = e.pageX;
+			clickY = e.pageY;
+			dragok = true;
+			canvas.onmousemove = myMove;
+		};
+
+		function myUp(){
+			dragok = false;
+			canvas.onmousemove = null;
+		};
+		
+		function moveMap() {
+			initial_position_x = initial_position_x + diffX;
+			initial_position_y = initial_position_y + diffY;
+		
+			/* Set position */
+			places[0].position.x = initial_position_x + background_width/2 - places[0].size.width/2;
+			places[0].position.y = initial_position_y + background_height/2 - places[0].size.height/2;
+		};
+		
+		function startTouch(e){			
+			touchX=e.touches[0].pageX;
+			touchY=e.touches[0].pageY;
+			dragok = true;
+		};
+		
+		function endTouch(){
+			dragok = false;
+		};
+		
+		function moveTouch(e){
+			if (dragok){
+				x=e.touches[0].pageX;
+				y=e.touches[0].pageY;
+				diffX = (x - touchX);
+				diffY = (y - touchY);
+				touchX=e.touches[0].pageX;
+				touchY=e.touches[0].pageY;
+				moveMap();
+			}
+		}
+		
+		function init() {
+			/* Get canvas and context */
+			canvas = document.getElementById("myCanvas");
+			ctx = canvas.getContext("2d");
+			
+			data();
+			x = canvas.width/2 - places[0].size.width/2;
+			y = canvas.height/2 - places[0].size.height/2;			
+			clickX = 0;
+ 			clickY = 0;
+			touchX = 0;
+			touchY = 0;
+			moveMap();
+			
+			return setInterval(draw, 10);
+		}		
+		
+        /* Draw */
+		init();
+		canvas.onmousedown = myDown;
+		canvas.onmouseup = myUp;
+		canvas.addEventListener('touchstart',startTouch);
+		canvas.addEventListener('touchmove',moveTouch);
+		canvas.addEventListener('touchend',endTouch);
+        
+    </script>
+	
+</body>
+</html>                                		
